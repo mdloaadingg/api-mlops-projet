@@ -15,13 +15,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def run_ml_experiment(n_trees, run_name):
-    # --- LA CORRECTION EST ICI ---
-    # On vérifie si on est sur les serveurs de GitHub Actions
-    if not os.getenv("GITHUB_ACTIONS"):
-        # Si on est en local (sur votre PC), on utilise le port 5001
+    # --- LA CORRECTION DÉFINITIVE EST ICI ---
+    if os.getenv("GITHUB_ACTIONS"):
+        # Sur GitHub Actions : on force MLflow à utiliser un bête dossier local (file://)
+        mlflow.set_tracking_uri("file:./mlruns")
+    else:
+        # En local sur votre PC : on garde le serveur HTTP
         mlflow.set_tracking_uri("http://127.0.0.1:5001")
-    # Si on est sur GitHub, on ne fait rien, MLflow créera un dossier ./mlruns tout seul !
-    # -----------------------------
+    # ----------------------------------------
     
     # 1. Définir le nom de l'expérience principale
     mlflow.set_experiment("Analyse_Immobiliere_MLOps")
