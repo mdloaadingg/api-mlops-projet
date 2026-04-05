@@ -1,0 +1,7 @@
+{
+    "dataset_name": "immo_data.csv",
+    "shape": "500 lignes, 4 colonnes",
+    "target": "sold",
+    "split_fraction": "70/15/15",
+    "random_state": 42
+}

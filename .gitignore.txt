@@ -1,0 +1,14 @@
+# Environnements virtuels
+venv/
+env/
+
+# Fichiers de cache Python et Pytest
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# MLflow (On ne push pas l'historique local)
+mlruns/
+
+# Fichiers de configuration système
+.DS_Store
