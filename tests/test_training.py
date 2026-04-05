@@ -2,7 +2,7 @@ import os
 import pytest
 
 # --- TESTS DU PIPELINE D'ENTRAÎNEMENT ---
-# L'objectif ici n'est pas de tester les maths de Scikit-Learn (ils le font déjà), 
+# L'objectif ici n'est pas de tester les maths de Scikit-Learn, 
 # mais de s'assurer que notre "usine" produit bien le fichier requis pour le déploiement.
 
 def test_model_artifact_exists():
@@ -15,6 +15,3 @@ def test_model_artifact_exists():
     
     # Message d'erreur personnalisé (ça m'a sauvé pas mal de temps de débogage quand j'oubliais de lancer train.py)
     assert os.path.exists(model_path), f"❌ Le fichier n'a pas été trouvé au chemin : {model_path}. Avez-vous bien lancé train.py en amont ?"
-
-# TODO : Pour une V2, créer un test 'test_training_execution' qui lance une mini-boucle 
-# d'entraînement sur 5 lignes de données factices pour tester le fit() complet sans attendre 2 minutes.

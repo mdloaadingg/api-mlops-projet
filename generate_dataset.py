@@ -2,10 +2,9 @@ import pandas as pd
 import numpy as np
 import os
 
-# Script de génération d'un jeu de données immobilier (Fake data)
 # Le but est d'avoir un dataset léger pour que l'entraînement prenne < 2 min dans la CI/CD
 
-np.random.seed(42) # On fixe la seed pour garantir la reproductibilité (critère obligatoire du TP)
+np.random.seed(42) # On fixe la seed pour garantir la reproductibilité 
 n_samples = 500 # Pas besoin d'un million de lignes pour valider l'infrastructure MLOps
 
 cities = ["Clermont-Ferrand", "Lyon", "Paris"]
@@ -14,7 +13,7 @@ rooms_col = np.random.randint(1, 6, n_samples)
 # La surface dépend du nombre de pièces + un peu de bruit gaussien pour le réalisme
 surface_col = rooms_col * 15 + np.random.normal(10, 5, n_samples)
 
-# --- Logique métier (Target) ---
+# --- Logique métier  ---
 # Je crée une règle un peu arbitraire pour que le RandomForest ait un vrai pattern à apprendre
 sold_col = []
 for i in range(n_samples):
@@ -32,10 +31,8 @@ df = pd.DataFrame({
     "surface": surface_col,
     "rooms": rooms_col,
     "city": city_col,
-    "sold": sold_col # Notre variable cible (Target)
+    "sold": sold_col # Notre variable cible 
 })
-
-# TODO: Peut-être introduire des valeurs manquantes (NaN) dans une V2 pour tester la robustesse de l'API
 
 # Petite sécurité : je force la création du dossier sinon ça plante au tout premier run
 os.makedirs("data", exist_ok=True)

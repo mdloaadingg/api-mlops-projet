@@ -15,9 +15,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def run_ml_experiment(n_trees, run_name):
-    # --- LA CORRECTION DÉFINITIVE EST ICI ---
     if os.getenv("GITHUB_ACTIONS"):
-        # Sur GitHub Actions : on force MLflow à utiliser un bête dossier local (file://)
         mlflow.set_tracking_uri("file:./mlruns")
     else:
         # En local sur votre PC : on garde le serveur HTTP
