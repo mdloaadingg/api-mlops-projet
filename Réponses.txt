@@ -1,0 +1,76 @@
+--- RÉPONSES THÉORIQUES TP2 : MLFLOW ---
+
+1. Qu'appelle-t-on une expérience dans MLflow ?
+C'est comme un gros dossier de travail. Ça permet de regrouper et d'organiser toutes les expérimentations et les tests qu'on fait pour un même projet d'IA.
+
+2. Qu'appelle-t-on un run ?
+C'est une exécution unique de notre script d'entraînement. En gros, c'est un essai spécifique avec ses propres réglages à l'intérieur de notre expérience globale.
+
+3. Quelle différence faites-vous entre un paramètre, une métrique et un artefact ?
+- Un paramètre, c'est ce qu'on règle avant de lancer le modèle .
+- Une métrique, c'est la note finale qui permet d'évaluer le modèle .
+- Un artefact, c'est un fichier physique généré pendant l'entraînement qu'on veut conserver .
+
+13 à 16. (Paramètres et Métriques)
+J'ai choisi d'enregistrer le "type_modele" (RandomForest) et le "nb_arbres" (n_estimators) car ce sont ceux qui ont le plus d'impact sur la performance et sur le risque de surapprentissage (overfitting).
+ Comme métriques, j'ai gardé l'accuracy (précision globale) et le F1-score. L'accuracy donne une bonne idée générale, et le F1-score est très utile si les données sont un peu déséquilibrées.
+
+18 à 20. (Artefacts)
+J'ai enregistré le modèle lui-même (le pipeline scikit-learn complet). C'est indispensable pour pouvoir le réutiliser plus tard dans l'API sans avoir à tout réentraîner à chaque fois.
+ Il est généré à la toute fin du pipeline, une fois l'entraînement terminé.
+
+22 à 28. (Analyse des runs)
+J'ai fait varier le nombre d'arbres (10, 100, 300) pour voir si un gros modèle apportait vraiment un plus ou s'il ralentissait juste le système.
+ Le meilleur run est celui avec 100 arbres, car il offre le meilleur compromis. La métrique (accuracy) est presque aussi bonne qu'avec 300 arbres,
+ mais le modèle est plus léger et s'exécute plus vite. Une seule métrique ne suffit pas toujours, il faut aussi prendre en compte le temps de calcul en production.
+ Je retiens donc la configuration à 100 arbres.
+
+
+--- RÉPONSES THÉORIQUES TP3 : CI/CD & DÉPLOIEMENT ---
+
+1. Quelle différence faites-vous entre tester localement une application et déployer cette application ?
+Tester localement, c'est faire tourner le code juste sur mon propre ordinateur.
+ Déployer, c'est l'héberger sur un vrai serveur sur le cloud pour qu'elle soit accessible à tout le monde 24h/24.
+
+2. À quoi sert un Dockerfile dans une chaîne CI/CD ?
+C'est une recette qui permet de recréer exactement le même environnement système que sur ma machine. Ça évite les problèmes de dépendances quand on passe en production.
+
+3. Pourquoi une application qui fonctionne en local peut-elle échouer une fois déployée ?
+ Ça arrive souvent si on a mis des chemins de fichiers en dur ou si on a forcé un port réseau local qui n'est pas autorisé par le serveur distant.
+
+4. Quel est le rôle d'un endpoint /health dans une application déployée ?
+C'est une route qui sert à prendre le pouls de l'API. La plateforme cloud l'interroge régulièrement pour s'assurer que l'application tourne bien et n'a pas planté.
+
+5. Quelle différence faites-vous entre CI et CD ?
+La CI (Intégration Continue), c'est l'automatisation des tests et du build à chaque push. La CD (Déploiement Continu), c'est l'étape d'après : la mise en ligne automatique du nouveau code si la CI est validée.
+
+22. Que signifie un pipeline vert ? Que signifie un pipeline rouge ?
+Un pipeline vert veut dire que tous les tests ont réussi, le code est sain. Un pipeline rouge veut dire qu'il y a une erreur quelque part,
+ ce qui bloque immédiatement le déploiement par sécurité.
+
+23. Pourquoi exécuter les tests avant le déploiement ?
+Pour ne pas envoyer du code cassé en production et planter l'API des utilisateurs.
+
+24. Pourquoi construire l'image Docker dans la CI alors même qu'elle a déjà été testée localement ?
+Pour vérifier qu'il ne manque aucune dépendance dans le requirements.txt et s'assurer que le Dockerfile fonctionne parfaitement dans un environnement vierge et neutre.
+
+25. Quelle différence faites-vous entre push et pull_request comme déclencheurs de workflow ?
+Le push lance la vérification quand on envoie le code directement sur la branche principale.
+ La pull_request le fait sur une branche de travail à part, pour valider le code avant de l'accepter dans le projet principal.
+
+26. Quelle est la première étape que vous regardez lorsqu'un workflow échoue ?
+Je vais direct dans les logs de l'onglet Actions sur GitHub,
+ et je cherche l'étape avec la croix rouge pour lire le message d'erreur exact.
+
+33. Expliquez à quel moment on parle de Continuous Deployment et Continuous Delivery.
+Continuous Delivery (Livraison) : tout est prêt et testé, mais un humain doit valider manuellement pour déployer.
+Continuous Deployment (Déploiement) : l'automatisation est totale, la mise en production se fait toute seule dès que la CI est verte.
+
+34. Quelles variables d'environnement votre projet devrait-il utiliser ?
+On utilise la variable PORT (pour s'adapter aux exigences du cloud) et GITHUB_ACTIONS (pour adapter le comportement de MLflow dans la CI).
+
+35. Lesquelles relèvent de la configuration fonctionnelle ?
+PORT et GITHUB_ACTIONS sont de la configuration fonctionnelle, ce ne sont pas des données confidentielles.
+
+36. Lesquelles relèvent d'un secret ?
+Les secrets seraient des mots de passe de base de données, des tokens d'accès ou des clés d'API (que l'on n'a
