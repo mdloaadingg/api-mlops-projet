@@ -1,44 +1,61 @@
-# Projet MLOps - Prédiction Immobilière (M1 IA)
+#  API de Prédiction Immobilière & Pipeline CI/CD MLOps
 
-Ce dépôt contient l'intégralité de mon projet de validation pour le module MLOps. 
-L'objectif principal ici n'était pas de chercher l'accuracy absolue avec un modèle surpuissant, mais de concevoir une **pipeline complète et industrialisable** : de l'entraînement tracé jusqu'au déploiement d'une API REST automatisée.
+Ce dépôt contient le code source d'une API de machine learning déployée de bout en bout, de l'entraînement du modèle jusqu'à la mise en production automatisée. 
 
-## 1. Le Dataset et le Cas d'Usage
-J'ai choisi de travailler sur un jeu de données immobilier (`immo_data.csv`).
-* **La tâche :** Classification (Prédire si un bien sera vendu rapidement ou non, variable `sold`).
-* **Pourquoi ce choix ?** L'immobilier est un cas d'usage très concret. Il m'a permis de travailler sur des variables mixtes (numériques comme la `surface` et catégorielles comme la `city`) nécessitant la mise en place d'un `ColumnTransformer` propre dans scikit-learn.
-* **Taille :** Volontairement réduit pour permettre des entraînements rapides et réguliers dans la boucle CI/CD.
+Ce projet a été développé dans le but de mettre en pratique une véritable architecture **MLOps**, en garantissant la fiabilité du code, la reproductibilité des environnements et l'automatisation des déploiements.
 
-## 2. Architecture et Stack Technique
-* **Modélisation :** `scikit-learn` (RandomForestClassifier, Regréssion Logistique).
-* **Tracking :** `MLflow` (pour la comparaison des hyperparamètres et la sauvegarde des artefacts).
-* **API :** `FastAPI` + `Uvicorn` (avec validation des données via Pydantic).
-* **Tests :** `Pytest` (couverture des routes de l'API et gestion des erreurs 422/503).
-* **Déploiement :** Docker & Render.
+##  Description du Projet
 
-## 3. Comment lancer le projet en local ?
+L'application expose un modèle de Machine Learning (Random Forest) capable de prédire si un bien immobilier sera vendu ou non, en fonction de sa surface, de son nombre de pièces et de sa ville. 
 
-**1. Activer l'environnement virtuel :**
-```bash
+Le cœur du projet ne réside pas seulement dans le modèle lui-même, mais dans toute l'infrastructure construite autour pour le rendre accessible, robuste et facile à mettre à jour.
+
+##  Stack Technique
+
+* **Machine Learning :** Scikit-Learn, Pandas
+* **Tracking d'expérimentations :** MLflow
+* **API REST :** FastAPI, Uvicorn
+* **Conteneurisation :** Docker
+* **CI/CD :** GitHub Actions
+* **Hébergement Cloud :** Render
+
+##  Architecture MLOps
+
+### 1. Intégration Continue (CI)
+À chaque modification poussée sur la branche `main` (ou via Pull Request), un workflow GitHub Actions se déclenche automatiquement pour :
+1. Installer l'environnement Python.
+2. Entraîner le modèle et générer le fichier `model.joblib`.
+3. Exécuter les tests unitaires avec `pytest` pour s'assurer que l'API ne régresse pas.
+4. Construire l'image Docker dans un environnement vierge pour garantir l'absence de problèmes de dépendances.
+
+### 2. Déploiement Continu (CD)
+Une fois la CI validée (pipeline vert), la plateforme **Render** détecte la mise à jour, récupère la dernière image Docker et redéploie le conteneur automatiquement (Zero-Downtime Deployment).
+
+##  Défis techniques et Solutions
+
+Au cours du développement, j'ai dû adapter le code pour qu'il fonctionne aussi bien sur ma machine locale que sur les serveurs distants :
+
+* **Conflit MLflow dans la CI :** Par défaut, MLflow cherchait à se connecter à un serveur local sur le port 5001 (`http://127.0.0.1:5001`), ce qui faisait planter les tests sur l'environnement vierge de GitHub Actions. J'ai résolu ce problème en ajoutant une détection de l'environnement (via la variable `GITHUB_ACTIONS`) pour forcer MLflow à utiliser une sauvegarde en fichier local (`file://`) lors de la CI.
+* **Gestion des variables d'environnement :** J'ai dynamisé le port d'écoute d'Uvicorn dans le `Dockerfile` (`--port ${PORT:-10000}`) afin qu'il puisse s'adapter aux exigences réseau de la plateforme Cloud sans rien coder en dur.
+
+##  Installation et Utilisation en local
+
+Si vous souhaitez faire tourner ce projet sur votre machine :
+
+1. **Cloner le dépôt :**
+   ```bash
+   git clone [https://github.com/VOTRE_PSEUDO/api-mlops-projet.git](https://github.com/VOTRE_PSEUDO/api-mlops-projet.git)
+   cd api-mlops-projet
+
+**2. Créer un environnement virtuel et installer les dépendances :**
 python -m venv venv
-# Sur Windows :
-.\venv\Scripts\activate
-
-**2. Installer les dépendances :**
+source venv/bin/activate  # Sur Windows : venv\Scripts\activate
 pip install -r requirements.txt
 
-**3. Entraîner le modèle et lancer MLflow :**
+**3. Générer les données et entraîner le modèle : :**
+python generate_dataset.py
 python src/mlops_tp/train.py
-mlflow ui --port 5001
 
-**4. Lancer lAPI locale :**
-uvicorn src.mlops_tp.api:app --reload
+**4. Lancer l'API :**
+uvicorn src.mlops_tp.api:app --reload --port 10000
 
-4. Défis techniques rencontrés & Apprentissages
-Au cours de ce projet, j'ai fait face à plusieurs problématiques intéressantes qui m'ont forcé à revoir ma copie :
-
-Le piège des terminaux Windows : J'ai eu pas mal de conflits de ports ([WinError 10022]) avec Uvicorn et MLflow qui tournaient en fond sans se fermer proprement. J'ai dû adapter mes scripts pour forcer le port 5001 sur MLflow.
-
-Context Manager Pytest : Au début, mes tests d'API échouaient avec une erreur 503 car le modèle ne se chargeait pas pendant le test. J'ai appris à utiliser le bloc with TestClient(app) pour simuler le démarrage complet du serveur (@app.on_event("startup")).
-
-Data Leakage : J'ai fait le choix d'encapsuler tout mon preprocessing (OneHotEncoder, StandardScaler) directement dans un Pipeline Scikit-Learn avec le modèle. Cela me garantit que l'API applique exactement les mêmes transformations qu'à l'entraînement, sans risque d'erreur.
