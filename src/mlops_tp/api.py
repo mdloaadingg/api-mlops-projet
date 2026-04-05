@@ -45,7 +45,7 @@ def health_check():
     if MODEL is None:
         # Erreur 503 : Service Unavailable
         raise HTTPException(status_code=503, detail="Modèle non chargé, l'API ne peut pas répondre.")
-    return {"status": "ok", "message": "API is ready to predict!"}
+    return {"status": "ok", "message": "API V2 : La CD fonctionne !"}
 
 @app.get("/metadata")
 def get_metadata():
